@@ -23,6 +23,7 @@ interface ClaudeResponse {
 
 const aiApiClient = async ({ model, message }: any): Promise<string> => {
   try {
+    const aiModel = model || CLAUDE_CONFIG.defaultModel;
     // Pisahkan system dan user messages
     const systemMessages = message.filter((msg: any) => msg.role === "system");
     const userMessages = message.filter((msg: any) => msg.role !== "system");
@@ -44,7 +45,7 @@ const aiApiClient = async ({ model, message }: any): Promise<string> => {
 
     // Build payload
     const payload = {
-      model: model || CLAUDE_CONFIG.defaultModel,
+      model: aiModel,
       max_tokens: CLAUDE_CONFIG.maxTokens,
       system: systemContent,
       messages: userMessages.map((msg: any) => ({

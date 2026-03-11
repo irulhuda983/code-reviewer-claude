@@ -5,8 +5,9 @@ import path from "path";
 import ora from "ora";
 import { getDiffReviewClaude } from "../services/ai-reviewer";
 
-const buildAIReview = async ({ diff }: any) => {
+const buildAIReview = async ({ model, diff }: any) => {
   const review = await getDiffReviewClaude({
+    model,
     diff,
   });
 
@@ -18,13 +19,15 @@ export const generateCommand = new Command("generate")
   // .requiredOption("--diff <file>", "Path to diff file")
   .option("-f, --from <hash>", "Start commit hash")
   .option("-t, --to <hash>", "End commit hash (default: HEAD)")
-  .option("--output <name>", "Output folder name", "code-review")
+  .option("-o, --output <name>", "Output folder name", "code-review")
+  .option("-m, --model <name>", "Model name", "")
   .action(async (options) => {
     const spinner = ora("Reading diff file...").start();
 
     try {
       const from = options.from;
       const to = options.to || "HEAD";
+      const model = options.model;
 
       if (!from) {
         console.error("Error: --from <hash> is required");
@@ -46,7 +49,7 @@ export const generateCommand = new Command("generate")
       // TODO: kirim diff ke Claude
       const fileName = `code-review-${Date.now()}.md`;
       spinner.text = "Sending diff to AI for review...";
-      const markdownContent = await buildAIReview({ diff: diff });
+      const markdownContent = await buildAIReview({ diff: diff, model: model });
 
       // ====== USE FOLDER FROM PARAM OR DEFAULT ======
       const reviewDir = path.join(process.cwd(), options.output);

@@ -5,8 +5,9 @@ import path from "path";
 import ora from "ora";
 import { getCommitReviewClaude } from "../services/ai-reviewer";
 
-const buildAIReview = async ({ diff }: any) => {
+const buildAIReview = async ({ diff, model }: any) => {
   const review = await getCommitReviewClaude({
+    model,
     diff,
   });
 
@@ -17,7 +18,8 @@ export const commitReviewCommand = new Command("commit-review")
   .description("Generate review report from commit range")
   .option("-f, --from <hash>", "Start commit hash")
   .option("-t, --to <hash>", "End commit hash (default: HEAD)")
-  .option("-0, --output <name>", "Output folder name", "commit-review")
+  .option("-o, --output <name>", "Output folder name", "commit-review")
+  .option("-m, --model <name>", "Model name", "")
   .action(async (options) => {
     const spinner = ora("Reading diff file...").start();
     try {
@@ -44,7 +46,7 @@ export const commitReviewCommand = new Command("commit-review")
       // TODO: kirim diff ke Claude
       const fileName = `commit-review-${Date.now()}.md`;
       spinner.text = "Sending diff to AI for review...";
-      const markdownContent = await buildAIReview({ diff: diff });
+      const markdownContent = await buildAIReview({ diff: diff, model: options.model });
 
       // ====== USE FOLDER FROM PARAM OR DEFAULT ======
       const reviewDir = path.join(process.cwd(), options.output);

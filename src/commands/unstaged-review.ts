@@ -5,8 +5,9 @@ import path from "path";
 import ora from "ora";
 import { getCommitReviewClaude } from "../services/ai-reviewer";
 
-const buildAIReview = async ({ diff }: any) => {
+const buildAIReview = async ({ model, diff }: any) => {
   const review = await getCommitReviewClaude({
+    model,
     diff,
   });
 
@@ -15,7 +16,8 @@ const buildAIReview = async ({ diff }: any) => {
 
 export const unstagedReviewCommand = new Command("unstaged-review")
   .description("Run AI review on staged changes (git diff)")
-  .option("--output <name>", "Output folder name", "staged-review")
+  .option("-o, --output <name>", "Output folder name", "unstaged-review")
+  .option("-m, --model <name>", "Model name", "")
   .action(async (options) => {
     const spinner = ora("Reading diff file...").start();
     try {
@@ -40,7 +42,7 @@ export const unstagedReviewCommand = new Command("unstaged-review")
       // TODO: kirim diff ke Claude
       const fileName = `unstaged-review-${Date.now()}.md`;
       spinner.text = "Sending diff to AI for review...";
-      const markdownContent = await buildAIReview({ diff: diff });
+      const markdownContent = await buildAIReview({ model: options.model, diff: diff });
 
       // ====== USE FOLDER FROM PARAM OR DEFAULT ======
       const reviewDir = path.join(process.cwd(), options.output);
